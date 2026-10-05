@@ -1,0 +1,120 @@
+{
+  "$schema": "https://branchkit.dev/schemas/manifest.json",
+  "id": "apps",
+  "name": "Apps",
+  "icon": "rocket",
+  "requires": {
+    "privileges": [
+      "apps",
+      "apps.control",
+      "filesystem",
+      "input",
+      "display"
+    ],
+    "capabilities": {
+      "uses": [
+        "native.app_windows",
+        "native.cursor",
+        "native.frontmost_app",
+        "native.installed_apps",
+        "native.launch_app",
+        "native.new_app_window",
+        "native.open_target",
+        "native.warp_cursor"
+      ]
+    }
+  },
+  "version": "0.1.0",
+  "min_api_version": "0.2.0",
+  "description": "The apps on this machine and the names you call them by: open, switch to, or start a new window of any app by name.",
+  "author": "BranchKit",
+  "publisher": "github:branchkit",
+  "dev": {
+    "build": [
+      ["templ", "generate"],
+      ["go", "build", "-ldflags=-s -w", "-o", "../apps-plugin", "."]
+    ],
+    "build_dir": "src"
+  },
+  "run": "./apps-plugin",
+  "action_prefix": "apps",
+  "action_types": {
+    "launch": {
+      "uses": ["native.launch_app"],
+      "label": "Open App",
+      "fields": [
+        { "key": "app_id", "label": "App", "placeholder": "an app id, or a name from the Apps tab", "field_type": "string", "required": true },
+        { "key": "new_instance", "label": "Start another copy", "field_type": "boolean", "required": false }
+      ]
+    },
+    "new_window": {
+      "uses": ["native.launch_app"],
+      "label": "New Window on This Desktop",
+      "fields": [
+        { "key": "app_id", "label": "App", "placeholder": "an app id, or a name from the Apps tab", "field_type": "string", "required": true }
+      ]
+    },
+    "open": {
+      "uses": ["native.open_target"],
+      "label": "Open a Link or File",
+      "fields": [
+        { "key": "target", "label": "Link or file", "placeholder": "https://example.com", "field_type": "string", "required": true }
+      ]
+    }
+  },
+  "provides": {
+    "collections": {
+      "apps": {
+        "id_strategy": { "type": "by_field", "field": "spoken" },
+        "preset": "named_entities",
+        "fields": [
+          { "key": "spoken", "field_type": "string", "label": "Spoken name", "required": true },
+          { "key": "app_id", "field_type": "string", "label": "App id", "required": true }
+        ],
+        "feeds_matching": {
+          "type": "as_named_entities",
+          "key_field": "spoken",
+          "value_field": "app_id"
+        },
+        "description": "Every name you can say for an app on this machine, each resolving to the app's id: the id this OS's platform reports for it (a bundle identifier on macOS, a desktop entry on Linux, an executable's name on Windows)."
+      },
+      "app_traits": {
+        "preset": "data",
+        "writers": "introducer_only",
+        "merge": "authoritative",
+        "id_strategy": { "type": "by_field", "field": "key" },
+        "fields": [
+          { "key": "key", "field_type": "string", "label": "Key", "required": true },
+          { "key": "trait", "field_type": "string", "label": "Trait", "required": true },
+          { "key": "app_id", "field_type": "string", "label": "App id", "required": true }
+        ],
+        "description": "What kind of application each app is — 'terminal' and 'chat' today. These are FACTS about applications; what a trait MEANS is the consumer's business, and a trait named for a consumer's policy (e.g. 'no_trailing_period') does not belong here. Called traits, not groups, because `group` already means a writer-owned replace-set label on a record envelope. NOT a stable surface yet: writes are closed and the trait names may change."
+      },
+      "plugin.apps.config": {
+        "preset": "settings",
+        "label": "Apps",
+        "description": "Apps settings. Defaults live here; only your changes are stored.",
+        "fields": [
+          { "key": "pointer_to_opened_app", "label": "Move the pointer to an app you open", "field_type": "boolean", "default": false }
+        ]
+      }
+    }
+  },
+  "consumes": {
+    "events": [
+      { "pattern": "_platform.app.focused" },
+      { "pattern": "_platform.system.did_wake" },
+      { "pattern": "_platform.collection.updated" }
+    ]
+  },
+  "collection_data": {
+    "voice_commands": "commands.json"
+  },
+  "implements": {
+    "settings_tabs": [
+      { "label": "Apps", "key": "apps" }
+    ],
+    "on_action": true,
+    "render_settings": true
+  }
+}

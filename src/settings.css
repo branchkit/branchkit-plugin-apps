@@ -1,0 +1,16 @@
+/* The apps plugin's Apps tab. Shipped through RenderSettingsResponse.CSS. */
+
+/* The single preference row above the apps table. */
+.apps-prefs { margin-bottom: var(--size-0); }
+
+/* What names and traits are, and why the difference matters — read once,
+   then ignored, so it sits below the body size. */
+.apps-intro {
+    padding: 0 0 var(--size--2);
+    font-size: var(--font-size--2);
+    color: var(--_ink-dim);
+}
+
+/* The "+" that opens a name or trait editor. Larger than the icon buttons
+   around it because it is a target rather than a glyph. */
+.add-btn { font-size: var(--font-size-0); }

@@ -1,0 +1,100 @@
+package main
+
+import "github.com/branchkit/plugin-sdk-go"
+import "github.com/branchkit/plugin-sdk-go/ui"
+import "strconv"
+
+templ Apps(rows []appRow, pointerToOpenedApp bool, traits traitCatalog) {
+	<div data-signals="{editingApp: '', newName: '', traitPick: '', traitNew: '', newTrait: ''}">
+		<bk-table columns="1fr 100px" class="apps-prefs">
+			<div class="settings-row">
+				<div class="label" title="After you open or switch to an app, move the pointer to its window so scrolling lands there">Move the pointer to an app you open</div>
+				<div class="row-actions">
+					// A setting, so a switch: a real control that Tab, screen readers
+					// and hint overlays reach. It reports the requested value and moves
+					// only when the re-render says the change took.
+					<bk-toggle checked?={ pointerToOpenedApp } title="Move the pointer to an app you open"
+						data-on:change={ branchkit.MethodPost("set_pointer_to_opened_app", "{enabled: evt.detail.checked}") }></bk-toggle>
+				</div>
+			</div>
+		</bk-table>
+		<div class="apps-intro">
+			<b>Names</b> are what you can say to open an app — yours alone.
+			<b>Traits</b> are what the app IS, and every plugin reads them: changing one
+			changes how the app is treated everywhere, not just here.
+		</div>
+		<bk-table columns="1.3fr 1.5fr 1.5fr 90px">
+			<div class="table-header">
+				<div>Application</div>
+				<div>Names</div>
+				<div>Traits</div>
+				<div class="align-right">On</div>
+			</div>
+			for _, app := range rows {
+				<div class="settings-row">
+					<div class="label">{ app.Name }</div>
+					<div class="value">
+						<div class="alias-tags">
+							for _, name := range app.Names {
+								<span class="alias-tag">
+									{ name }
+									<button type="button" title={ "Stop " + strconv.Quote(name) + " opening " + app.Name }
+										data-on:click={ branchkit.MethodPost("name_remove", ui.Args("app_id", app.ID, "name", name)) }>&#215;</button>
+								</span>
+							}
+							<div data-show={ "$editingApp === " + ui.JS(app.ID) }>
+								<input class="add-alias-input" type="text" data-bind="newName" placeholder="Add a name…"
+									aria-label={ "New name for " + app.Name }
+									data-on:keydown={ "evt.key === 'Enter' && (" + branchkit.MethodPost("name_add", ui.Args("app_id", app.ID, "name", ui.Expr("$newName"))) + ", $editingApp = ''); evt.key === 'Escape' && ($editingApp = '')" }
+									data-on:blur__debounce.200ms="$editingApp = ''"/>
+							</div>
+							<div data-show={ "$editingApp !== " + ui.JS(app.ID) }>
+								<button type="button" class="icon-btn add-btn" title={ "Add a name for " + app.Name }
+									data-on:click={ "$editingApp = " + ui.JS(app.ID) + "; $newName = ''" }>+</button>
+							</div>
+						</div>
+					</div>
+					<div class="value">
+						<div class="alias-tags">
+							for _, trait := range app.Traits {
+								<span class="alias-tag" title={ app.Name + " is a '" + trait + "'. Removing it changes what every plugin believes about this app." }>
+									{ trait }
+									<button type="button" title={ "Remove the trait " + strconv.Quote(trait) + " from " + app.Name }
+										data-on:click={ branchkit.MethodPost("trait_remove", ui.Args("app_id", app.ID, "trait", trait)) }>&#215;</button>
+								</span>
+							}
+							// Pick from what exists. A select, not a text box: trait names
+							// are SHARED between apps, so a typo does not fail loudly the
+							// way a mistyped name does. It points at nothing, silently.
+							<div data-show={ "$traitPick === " + ui.JS(app.ID) }>
+								<select class="add-alias-input" aria-label={ "Add a trait to " + app.Name }
+									data-on:change={ "evt.target.value === '__new__' ? ($traitNew = " + ui.JS(app.ID) + ", $traitPick = '', $newTrait = '') : (evt.target.value && (" + traitAddPost(app.ID, "evt.target.value") + "), $traitPick = '')" }>
+									<option value="">Add trait…</option>
+									for _, name := range traits.Names {
+										<option value={ name }>{ name } ({ strconv.Itoa(traits.Counts[name]) })</option>
+									}
+									<option value="__new__">New trait…</option>
+								</select>
+							</div>
+							// Inventing a name is one step further than picking one.
+							<div data-show={ "$traitNew === " + ui.JS(app.ID) }>
+								<input class="add-alias-input" type="text" data-bind="newTrait" placeholder="New trait…"
+									aria-label={ "New trait for " + app.Name }
+									data-on:keydown={ "evt.key === 'Enter' && (" + traitAddPost(app.ID, "$newTrait") + ", $traitNew = ''); evt.key === 'Escape' && ($traitNew = '')" }
+									data-on:blur__debounce.200ms="$traitNew = ''"/>
+							</div>
+							<div data-show={ "$traitPick !== " + ui.JS(app.ID) + " && $traitNew !== " + ui.JS(app.ID) }>
+								<button type="button" class="icon-btn add-btn" title={ "Add a trait to " + app.Name }
+									data-on:click={ "$traitPick = " + ui.JS(app.ID) }>+</button>
+							</div>
+						</div>
+					</div>
+					<div class="row-actions">
+						<bk-toggle checked?={ app.Enabled } title={ app.Name + " can be opened by name" }
+							data-on:change={ branchkit.MethodPost("set_enabled", ui.Args("app_id", app.ID, "enabled", ui.Expr("evt.detail.checked"))) }></bk-toggle>
+					</div>
+				</div>
+			}
+		</bk-table>
+	</div>
+}
