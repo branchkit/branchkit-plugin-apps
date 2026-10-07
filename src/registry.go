@@ -142,10 +142,14 @@ func mergeApps(scanned []branchkit.InstalledApp, core []appEntry) []appEntry {
 	return out
 }
 
-// appRecord is one name you can say for one app.
+// appRecord is one name you can say for one app. Name is the app's own
+// display name ("Firefox"), the same on every alias record, so a plugin that
+// lists apps can show them the way the system does rather than as the lower
+// case spoken form.
 type appRecord struct {
 	Spoken string `json:"spoken"`
 	AppID  string `json:"app_id"`
+	Name   string `json:"name,omitempty"`
 }
 
 // appRecords flattens apps into one record per spoken name. A name two apps
@@ -164,7 +168,7 @@ func appRecords(apps []appEntry) (records []appRecord, clashes []string) {
 				continue
 			}
 			owner[alias] = a.ID
-			records = append(records, appRecord{Spoken: alias, AppID: a.ID})
+			records = append(records, appRecord{Spoken: alias, AppID: a.ID, Name: a.Name})
 		}
 	}
 	return records, clashes

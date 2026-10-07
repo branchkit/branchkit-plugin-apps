@@ -69,7 +69,8 @@
         "preset": "named_entities",
         "fields": [
           { "key": "spoken", "field_type": "string", "label": "Spoken name", "required": true },
-          { "key": "app_id", "field_type": "string", "label": "App id", "required": true }
+          { "key": "app_id", "field_type": "string", "label": "App id", "required": true },
+          { "key": "name", "field_type": "string", "label": "Name", "required": false }
         ],
         "feeds_matching": {
           "type": "as_named_entities",

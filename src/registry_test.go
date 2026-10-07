@@ -132,6 +132,22 @@ func TestAppRecordsClash(t *testing.T) {
 	}
 }
 
+// Every alias record carries the app's display name, so a plugin listing apps
+// can show "Google Chrome" rather than the spoken "chrome".
+func TestAppRecordsCarryTheDisplayName(t *testing.T) {
+	records, _ := appRecords([]appEntry{
+		{Name: "Google Chrome", ID: "com.google.Chrome", Aliases: []string{"google chrome", "chrome"}},
+	})
+	if len(records) != 2 {
+		t.Fatalf("records = %v", records)
+	}
+	for _, r := range records {
+		if r.Name != "Google Chrome" {
+			t.Errorf("%q has name %q", r.Spoken, r.Name)
+		}
+	}
+}
+
 // An app focused that the registry has never seen triggers a rescan — the
 // usual reason is that it was just installed — at most once a minute.
 func TestUnknownFocusRescans(t *testing.T) {
