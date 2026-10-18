@@ -300,11 +300,8 @@ const rescanInterval = time.Minute
 // onAppFocused rescans when the focused app is not one the registry knows:
 // the usual reason is that it was installed since the last scan, and without
 // this a new app cannot be opened by name until BranchKit restarts.
-func (h *Host) onAppFocused(params json.RawMessage) {
-	var ev struct {
-		BundleID string `json:"bundle_id"`
-	}
-	if err := json.Unmarshal(params, &ev); err != nil || ev.BundleID == "" {
+func (h *Host) onAppFocused(ev branchkit.AppFocusedEventParams) {
+	if ev.BundleID == "" {
 		return
 	}
 	h.appsMu.Lock()

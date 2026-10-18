@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"encoding/json"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -39,12 +38,12 @@ func main() {
 	// again when an app the registry has never seen takes focus — usually
 	// one installed since the last scan.
 	p.OnReady(func() { go h.scanWithRetry(time.Sleep) })
-	p.On("_platform.system.did_wake", func(json.RawMessage) {
+	p.OnSystemDidWake(func() {
 		if err := h.scanAndPublish(); err != nil {
 			branchkit.Logf("apps", "rescan on wake: %v", err)
 		}
 	})
-	p.On("_platform.app.focused", func(params json.RawMessage) { h.onAppFocused(params) })
+	p.OnAppFocused(h.onAppFocused)
 
 	p.Run()
 }

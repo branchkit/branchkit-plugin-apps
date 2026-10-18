@@ -156,8 +156,7 @@ func TestUnknownFocusRescans(t *testing.T) {
 	clock := time.Now()
 	h.now = func() time.Time { return clock }
 	focus := func(id string) {
-		raw, _ := json.Marshal(map[string]string{"bundle_id": id})
-		h.onAppFocused(raw)
+		h.onAppFocused(branchkit.AppFocusedEventParams{BundleID: id})
 	}
 	clock = clock.Add(2 * time.Minute)
 	start := f.scans
