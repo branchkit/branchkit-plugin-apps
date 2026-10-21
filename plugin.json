@@ -112,7 +112,7 @@
     "voice_commands": "commands.json"
   },
   "implements": {
-    "settings_tabs": [
+    "pages": [
       { "label": "Apps", "key": "apps" }
     ],
     "on_action": true,

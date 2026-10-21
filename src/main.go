@@ -25,7 +25,7 @@ func main() {
 	HandleOpen(p, h.handleOpen)
 
 	p.SettingsCSS(settingsCSS)
-	p.SettingsTab("apps", h.renderAppsTab)
+	p.Page("apps", h.renderAppsTab)
 	branchkit.HandleCommand(p, "name_add", h.handleNameAdd)
 	branchkit.HandleCommand(p, "name_remove", h.handleNameRemove)
 	branchkit.HandleCommand(p, "set_enabled", h.handleSetEnabled)
