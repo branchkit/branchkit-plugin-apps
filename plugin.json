@@ -3,6 +3,7 @@
   "id": "apps",
   "name": "Apps",
   "icon": "rocket",
+  "icon_color": "orange",
   "requires": {
     "privileges": [
       "apps",
