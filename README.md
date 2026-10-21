@@ -10,7 +10,7 @@ BranchKit is pre-launch: the app is not publicly released yet.
 ## What you can say
 
 The phrases come from `commands.json`. Any command can also be bound to a key
-in Settings → Keybinds.
+in BranchKit → Keybinds.
 
 | Say | Does |
 |---|---|
